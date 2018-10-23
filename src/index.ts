@@ -63,3 +63,4 @@ const tachyonsSlimmer = async ({
     return result;
 };
 export default tachyonsSlimmer;
+export { tachyonsSlimmer };
