@@ -1,0 +1,3 @@
+[submodule "tachyons"]
+	path = tachyons
+	url = https://github.com/tachyons-css/tachyons.git

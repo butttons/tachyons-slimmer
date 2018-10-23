@@ -12,21 +12,57 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(require("path"));
+const tachyons_build_css_1 = __importDefault(require("tachyons-build-css"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
-const parse_vue_file_1 = __importDefault(require("./parse-vue-file"));
-const DIR_NAME = 'nuxt-ui';
-const fullPath = path_1.default.join(__dirname, '..', '..', DIR_NAME);
-const vueFile = (fullPath, fileName) => __awaiter(this, void 0, void 0, function* () {
-    const filePath = path_1.default.join(fullPath, fileName);
-    return yield fs_extra_1.default.readFile(filePath).then((buffer) => buffer.toString());
-});
-(() => __awaiter(this, void 0, void 0, function* () {
-    //const files: string[] = await getVueFiles(fullPath);
-    const files = ['components/home/ProgressBox.vue'];
-    console.log('files', files);
-    for (let file of files) {
-        const parsedVue = yield parse_vue_file_1.default(fullPath, file);
-        console.log('parsedVue', parsedVue);
-        break;
+const extract_tachyons_1 = __importDefault(require("./tachyons/extract-tachyons"));
+const generate_base_1 = __importDefault(require("./tachyons/generate-base"));
+const save_base_1 = __importDefault(require("./tachyons/save-base"));
+const get_files_1 = __importDefault(require("./parser/get-files"));
+const class_list_1 = __importDefault(require("./tachyons/class-list"));
+const remove_nodes_1 = __importDefault(require("./tachyons/remove-nodes"));
+const tachyonsSlimmer = ({ dirName, preserveImports = false, outFile = 'tachyons.slim.css', fileType = 'html', htmlParser, postcss: { debugTachyon = false, normalize = true } = {} }) => __awaiter(this, void 0, void 0, function* () {
+    const result = {
+        filesRead: 0,
+        cssRulesFound: 0,
+        cssFileImports: {
+            count: 0,
+            files: []
+        },
+        cssRulesAdded: 0
+    };
+    try {
+        const fullPath = dirName !== undefined ? path_1.default.join(process.cwd(), '..', dirName) : process.cwd();
+        const allFiles = yield get_files_1.default({ fullPath, extension: fileType });
+        if (allFiles.length === 0) {
+            console.warn(`No files found in ${fullPath}`);
+            return;
+        }
+        result.filesRead = allFiles.length;
+        const tachyonsClasses = yield class_list_1.default();
+        const { files, classNames } = yield extract_tachyons_1.default({
+            fullPath,
+            allFiles,
+            baseClasses: tachyonsClasses,
+            transformFile: htmlParser
+        });
+        result.cssRulesFound = classNames.length;
+        result.cssFileImports.count = files.length;
+        result.cssFileImports.files = files;
+        const baseFile = generate_base_1.default({ fileNames: files, debug: debugTachyon, normalize });
+        const tempFile = yield save_base_1.default(baseFile.css);
+        const postCssRoot = yield tachyons_build_css_1.default(baseFile.css, {
+            from: tempFile,
+            to: outFile
+        }).then((result) => result.root);
+        const resultCss = preserveImports ? postCssRoot : remove_nodes_1.default(postCssRoot, classNames);
+        yield fs_extra_1.default.writeFile(String(outFile), resultCss);
+        yield fs_extra_1.default.remove(tempFile);
+        result.cssRulesAdded = resultCss.nodes ? resultCss.nodes.length : 0;
     }
-}))();
+    catch (e) {
+        console.error('ERROR!');
+        console.log(e);
+    }
+    return result;
+});
+exports.default = tachyonsSlimmer;
