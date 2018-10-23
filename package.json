@@ -10,9 +10,10 @@
         "clean": "rm -rf build",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "repository": "github:butttons/tachyons-slimmer",
+    "keywords": [ "tachyons", "tree shaking", "uncss", "unused css" ],
+    "author": "butttons",
+    "license": "MIT",
     "dependencies": {
         "cheerio": "^1.0.0-rc.2",
         "fs-extra": "^7.0.0",

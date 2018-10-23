@@ -1,8 +1,14 @@
-export default `
+# Tachyons-slimmer
+
+Install globally or as a peer dependency. 
+
 Usage
-  $ tachyons-slimmer
+```bash
+tachyons-slimmer
+```
 
 Options
+```
   --out,             -o     Output of CSS file. Defaults to tachyons.slim.css
   --dir,             -d     Directory to parse
   --file-type,       -f     Default: html. Types of file to parse. Vue files can also be parsed.
@@ -12,7 +18,4 @@ Options
   --vue-pug,                Default: false. Set to true to parse pug templates to HTML in .vue files.    
   --tachyons-debug          Default: false. Set to true to include tachyons debug imports.
   --tachyons-normalize      Default: true. Set to false to exclude normalize.css
-
-Examples
-  $ tachyons-slimmer --vue --vue-pug
-`;
+```
